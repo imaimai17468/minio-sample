@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  minio:
+    image: minio/minio:RELEASE.2021-06-17T00-10-46Z
+    container_name: 'minio'
+    ports:
+      - 9090:9000
+    environment:
+      - MINIO_ROOT_USER=nutmge
+      - MINIO_ROOT_PASSWORD=gidaifes
+    entrypoint: sh
+    command: -c "
+      mkdir -p /data/.minio.sys/buckets;
+      cp -r /policies/* /data/.minio.sys/;
+      cp -r /export/* /data/;
+      /usr/bin/minio server /data;
+      "
+    volumes:
+      - ./minio/data:/data
+      - ./minio/export:/export
+      - ./minio/config:/root/.minio
+      - ./minio/policies:/policies
+
+  next:
+    build: ./next
+    container_name: next
+    ports:
+      - 3000:3000
+    command: sh -c "npm install && npm run dev"
+    volumes:
+      - ./next:/app
+    environment:
+     - WATCHPACK_POLLING=true
+    stdin_open: true
+    tty: true
+
+  go:
+    build: ./go
+    container_name: go
+    ports:
+      - 1234:1234
+    command: go run cmd/main.go
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./go:/app
