@@ -10,11 +10,12 @@ export default async function handler(
     endPoint: 'localhost',
     port: 9000,
     useSSL: false,
-    accessKey: 'nutmeg',
-    secretKey: 'gidaifes',
+    accessKey: process.env.NEXT_PUBLIC_ACCESS_KEY,
+    secretKey: process.env.NEXT_PUBLIC_SECRET_KEY,
   })
 
-  const post = await minioClient.makeBucket('mybucket', 'us-east-1', function(err: string) {
+  const bucketName = req.body.bucketName
+  const post = await minioClient.makeBucket(bucketName, 'us-east-1', function(err: string) {
     if (err) return console.log('Error creating bucket.', err)
     console.log('Bucket created successfully in "us-east-1".')
   })
