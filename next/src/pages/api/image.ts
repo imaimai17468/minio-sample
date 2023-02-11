@@ -49,5 +49,15 @@ export default async function handler(
         throw new Error("Error uploading file");
       }
     });
+  }else if(req.method === "GET"){
+    const bucketName = req.query.bucketName;
+    const fileName = req.query.fileName;
+
+    try {
+      const response = await minioClient.getObject(bucketName, fileName);
+      res.status(200).json({ response });
+    } catch (err) {
+      throw new Error("Error uploading file");
+    }
   }
 }
