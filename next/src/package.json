@@ -9,10 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/formidable": "^2.0.5",
     "@types/react": "18.0.25",
     "@types/react-dom": "18.0.8",
     "eslint": "8.27.0",
     "eslint-config-next": "13.0.3",
+    "formidable": "^2.1.1",
     "fs": "^0.0.1-security",
     "minio": "^7.0.32",
     "next": "13.0.3",
