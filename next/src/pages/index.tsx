@@ -1,5 +1,12 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
+import { formidable } from "formidable";
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 interface Bucket {
   name: string;
@@ -27,19 +34,16 @@ export default function Home() {
       return;
     }
 
-    console.log(uploadBucketName, file.name, file);
+    const params = new FormData();
+    params.append("file", file);
+    params.append("bucketName", uploadBucketName);
+    params.append("fileName", file.name);
 
     const res = await fetch(`/api/image`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        bucketName: uploadBucketName,
-        fileName: file.name,
-        file: file,
-      }),
+      body: params,
     });
+
   };
 
   const handleMakeBucket = async () => {
@@ -165,3 +169,4 @@ export default function Home() {
     </div>
   );
 }
+
