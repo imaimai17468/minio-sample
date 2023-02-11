@@ -36,7 +36,7 @@ export default function Home() {
       setImageError("ファイルを選択してください");
       return;
     }
-    if(!uploadBucketName) {
+    if (!uploadBucketName) {
       setImageError("バケットを選択・作成してください");
       return;
     }
@@ -126,11 +126,11 @@ export default function Home() {
             }}
           ></input>
           <div className="flex flex-col items-center justify-center gap-5 bg-gray-200 p-2 rounded-md shadow-md w-3/5">
-            <p>プレビュー</p>
+            <p>Preview</p>
             <img src={fileURL}></img>
           </div>
           <div className="flex flex-col gap-3 justify-center">
-            <p>バケット一覧</p>
+            <p>Select Bucket</p>
             <select
               name="buckets"
               id="buckets"
@@ -161,6 +161,19 @@ export default function Home() {
         </div>
         <div className="flex flex-col items-center justify-center my-5 gap-10 bg-gray-100 p-5 rounded-md shadow-md w-4/5">
           <h2 className="text-2xl font-bold">Make Bucket</h2>
+          <div className="flex flex-col justify-center items-center">
+            <p className="mb-5 text-xl">Buckets</p>
+            <div className="flex flex-row flex-wrap justify-center gap-3">
+              {buckets.map((bucket) => {
+                return (
+                  <div className="flex flex-col items-center justify-center gap-3 p-2 rounded-md shadow-md bg-gray-300">
+                    <p>{bucket.name}</p>
+                    <p>{bucket.creationDate}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
           <input
             type="text"
             id="bucketName"
@@ -186,4 +199,3 @@ export default function Home() {
     </div>
   );
 }
-
