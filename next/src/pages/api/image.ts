@@ -14,23 +14,20 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const minioClient = new Minio.Client({
-    endPoint: "minio",
-    port: 9000,
-    useSSL: false,
+    endPoint: process.env.NEXT_PUBLIC_ENDPOINT,
+    port: Number(process.env.NEXT_PUBLIC_PORT),
     accessKey: process.env.NEXT_PUBLIC_ACCESS_KEY,
     secretKey: process.env.NEXT_PUBLIC_SECRET_KEY,
+    useSSL: false,
   });
 
   if (req.method === "POST") {
-    console.log("POST")
-
     const form = formidable();
     const fs = require("fs");
 
     form.parse(req, async (err, fields, files: any) => {
       if (err) {
-        console.error("Error", err);
-        throw err;
+        throw new Error("Error parsing form");
       }
 
       const bucketName = fields.bucketName;
@@ -39,19 +36,17 @@ export default async function handler(
         "Content-Type": "image/png",
       };
 
-      console.log("bucketName", bucketName)
-      console.log("fileName", fileName)
-      console.log("metaData", metaData)
-
       try {
-        const res = await minioClient.putObject(
+        const response = await minioClient.putObject(
           bucketName,
           fileName,
           fs.createReadStream(files.file.filepath),
           metaData
         );
+        
+        res.status(200).json({ response });
       } catch (err) {
-        console.log(err);
+        throw new Error("Error uploading file");
       }
     });
   }
