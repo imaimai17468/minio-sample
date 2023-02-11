@@ -10,6 +10,10 @@ docker compose run next npm install
 docker compose up -d
 ```
 
+`.env.local`を`/next`に追加してください。
+
+内容は[envfiles](https://github.com/NUTFes/envfiles/blob/main/minio/minio.env)を参照してください。
+
 # /minio
 
 `http://localhost:9001/`
@@ -21,9 +25,8 @@ minioのwebコンソールを開くことができます。
 # /next
 
 `http://localhost:3000/`
+
 バケットの追加と、バケットの一覧から画像を追加することが出来ます。
-`.env.local`を`/next`に追加してください。
-内容は[envfiles](https://github.com/NUTFes/envfiles/blob/main/minio/minio.env)を参照してください。
 
 ## `pages/api`
 minioのバケット操作や画像アップロードのメソッドが入っています。
