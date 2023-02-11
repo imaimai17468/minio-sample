@@ -1,6 +1,5 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
-import { formidable } from "formidable";
 
 export const config = {
   api: {
@@ -21,6 +20,7 @@ export default function Home() {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [bucketError, setBucketError] = useState<string>("");
   const [imageError, setImageError] = useState<string>("");
+  const [imageRes, setImageRes] = useState<string>("");
 
   const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]!;
@@ -29,8 +29,15 @@ export default function Home() {
   };
 
   const handleFileUpload = async () => {
+    setImageError("");
+    setImageRes("");
+
     if (!file) {
       setImageError("ファイルを選択してください");
+      return;
+    }
+    if(!uploadBucketName) {
+      setImageError("バケットを選択・作成してください");
       return;
     }
 
@@ -39,11 +46,20 @@ export default function Home() {
     params.append("bucketName", uploadBucketName);
     params.append("fileName", file.name);
 
-    const res = await fetch(`/api/image`, {
+    await fetch(`/api/image`, {
       method: "POST",
       body: params,
-    });
-
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          setImageRes("アップロード成功");
+          setFileURL("");
+          setFile(undefined);
+        }
+      })
+      .catch((err) => {
+        setImageError("アップロード失敗 (" + err + ")");
+      });
   };
 
   const handleMakeBucket = async () => {
@@ -140,6 +156,7 @@ export default function Home() {
               Image upload
             </button>
             <p className="text-red-500">{imageError}</p>
+            <p className="text-blue-500">{imageRes}</p>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center my-5 gap-10 bg-gray-100 p-5 rounded-md shadow-md w-4/5">
