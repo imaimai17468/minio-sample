@@ -19,8 +19,17 @@ export default function Home() {
   const [uploadBucketName, setUploadBucketName] = useState<string>("");
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [bucketError, setBucketError] = useState<string>("");
-  const [imageError, setImageError] = useState<string>("");
-  const [imageRes, setImageRes] = useState<string>("");
+  const [uploadImageError, setUploadImageError] = useState<string>("");
+  const [uploadImageRes, setUploadImageRes] = useState<string>("");
+  const [getFileName, setGetFileName] = useState<string>("");
+  const [getBucketName, setGetBucketName] = useState<string>("");
+  const [getImageError, setGetImageError] = useState<string>("");
+  const [getImageRes, setGetImageRes] = useState<string>("");
+  const [getImage, setGetImage] = useState<any>();
+
+  useEffect(() => {
+    console.log(getImage);
+  }, [getImage]);
 
   const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]!;
@@ -28,16 +37,16 @@ export default function Home() {
     setFileURL(URL.createObjectURL(file));
   };
 
-  const handleFileUpload = async () => {
-    setImageError("");
-    setImageRes("");
+  const handleImageUpload = async () => {
+    setUploadImageError("");
+    setUploadImageRes("");
 
     if (!file) {
-      setImageError("ファイルを選択してください");
+      setUploadImageError("ファイルを選択してください");
       return;
     }
     if (!uploadBucketName) {
-      setImageError("バケットを選択・作成してください");
+      setUploadImageError("バケットを選択・作成してください");
       return;
     }
 
@@ -52,13 +61,42 @@ export default function Home() {
     })
       .then((res) => {
         if (res.status === 200) {
-          setImageRes("アップロード成功");
+          setUploadImageRes("アップロード成功");
           setFileURL("");
           setFile(undefined);
         }
       })
       .catch((err) => {
-        setImageError("アップロード失敗 (" + err + ")");
+        setUploadImageError("アップロード失敗 (" + err + ")");
+      });
+  };
+
+  const handleGetImage = async () => {
+    setGetImageError("");
+    setGetImageRes("");
+
+    if (!getFileName) {
+      setGetImageError("ファイル名を入力してください");
+      return;
+    }
+    if (!getBucketName) {
+      setGetImageError("バケット名を入力してください");
+      return;
+    }
+
+    const fetchURL = `/api/image/${getBucketName}/${getFileName}`;
+
+    await fetch(fetchURL, {
+      method: "GET",
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          setGetImageRes("ダウンロード成功");
+          setGetImage(res);
+        }
+      })
+      .catch((err) => {
+        setGetImageError("ダウンロード失敗 (" + err + ")");
       });
   };
 
@@ -100,6 +138,7 @@ export default function Home() {
   useEffect(() => {
     if (buckets.length > 0) {
       setUploadBucketName(buckets[0].name);
+      setGetBucketName(buckets[0].name);
     }
   }, [buckets]);
 
@@ -115,7 +154,7 @@ export default function Home() {
       </div>
       <div className="flex flex-col items-center justify-center gap-3">
         <div className="flex flex-col items-center justify-center my-5 gap-10 bg-gray-100 p-5 rounded-md shadow-md w-4/5">
-          <h2 className="text-2xl font-bold">File Uploader</h2>
+          <h2 className="text-2xl font-bold">Image Uploader</h2>
           <input
             type="file"
             id="avatar"
@@ -150,13 +189,64 @@ export default function Home() {
           </div>
           <div className="flex flex-col justify-center gap-3">
             <button
-              onClick={handleFileUpload}
+              onClick={handleImageUpload}
               className="bg-blue-500 text-white font-bold p-2 rounded-md hover:bg-blue-700"
             >
               Image upload
             </button>
-            <p className="text-red-500">{imageError}</p>
-            <p className="text-blue-500">{imageRes}</p>
+            <p className="text-red-500">{uploadImageError}</p>
+            <p className="text-blue-500">{uploadImageRes}</p>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center my-5 gap-10 bg-gray-100 p-5 rounded-md shadow-md w-4/5">
+          <h2 className="text-2xl font-bold">Get Image</h2>
+          <div className="flex flex-row gap-5">
+            <div className="flex flex-col gap-3 justify-center items-center">
+              <p>Select Bucket</p>
+              <select
+                name="getBuckets"
+                id="getBuckets"
+                className="border-2 border-gray-300 p-2 rounded-md"
+                onChange={(e) => {
+                  setGetBucketName(e.target.value);
+                }}
+              >
+                {buckets.map((bucket) => {
+                  return (
+                    <option value={bucket.name} key={bucket.name}>
+                      {bucket.name}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <div className="flex flex-col gap-3 justify-center items-center">
+              <p>File Name</p>
+              <input
+                type="text"
+                id="fileName"
+                name="fileName"
+                placeholder="file name"
+                className="border-2 border-gray-300 p-2 rounded-md"
+                value={getFileName}
+                onChange={(e) => {
+                  setGetFileName(e.target.value);
+                }}
+              ></input>
+            </div>
+          </div>
+          <div className="flex flex-col justify-center gap-3">
+            <button
+              onClick={handleGetImage}
+              className="bg-blue-500 text-white font-bold p-2 rounded-md hover:bg-blue-700"
+            >
+              Get Image
+            </button>
+            <p className="text-red-500">{getImageError}</p>
+            <p className="text-blue-500">{getImageRes}</p>
+          </div>
+          <div className="flex flex-col items-center justify-center gap-5 bg-gray-200 p-2 rounded-md shadow-md w-3/5">
+            <p>Preview</p>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center my-5 gap-10 bg-gray-100 p-5 rounded-md shadow-md w-4/5">
@@ -164,14 +254,19 @@ export default function Home() {
           <div className="flex flex-col justify-center items-center">
             <p className="mb-5 text-xl">Buckets</p>
             <div className="flex flex-row flex-wrap justify-center gap-3">
-              {buckets.map((bucket) => {
+              {buckets.map((bucket, index) => {
                 return (
-                  <div className="flex flex-col items-center justify-center gap-3 p-2 rounded-md shadow-md bg-gray-300">
-                    <p>{bucket.name}</p>
+                  <div className="flex flex-col items-center justify-center gap-3 p-2 rounded-md shadow-md bg-gray-300" key={index}>
+                    <p className="text-xl">{bucket.name}</p>
                     <p>{bucket.creationDate}</p>
                   </div>
                 );
               })}
+              {buckets.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-3 p-2 rounded-md shadow-md bg-gray-300">
+                  <p className="text-xl">No Buckets Found</p>
+                </div>
+              )}
             </div>
           </div>
           <input

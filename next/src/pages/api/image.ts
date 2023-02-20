@@ -57,7 +57,7 @@ export default async function handler(
       const response = await minioClient.getObject(bucketName, fileName);
       res.status(200).json({ response });
     } catch (err) {
-      throw new Error("Error uploading file");
+      throw new Error("Error uploading image (" + err + ")");
     }
   }
 }
