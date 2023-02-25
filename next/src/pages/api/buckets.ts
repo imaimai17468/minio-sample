@@ -16,10 +16,18 @@ export default async function handler(
 
   if (req.method === "POST") {
     const bucketName = req.body.bucketName;
-    const post = await minioClient.makeBucket(bucketName, "us-east-1");
-    res.status(200).json(post);
+    try{
+      const post = await minioClient.makeBucket(bucketName, "us-east-1");
+      res.status(200).json(post);
+    }catch(err){
+      throw new Error("Error making bucket (" + err + ")");
+    }
   }else if (req.method === "GET") {
-    const get = await minioClient.listBuckets();
-    res.status(200).json(get);
+    try{
+      const get = await minioClient.listBuckets();
+      res.status(200).json(get);
+    }catch(err){
+      throw new Error("Error getting buckets (" + err + ")");
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import * as fs from 'fs';
 
 const Minio = require("minio");
 
@@ -19,20 +20,18 @@ export default async function handler(
     secretKey: process.env.NEXT_PUBLIC_SECRET_KEY,
     useSSL: false,
   });
-    
-  const { slug } = req.query;
 
-  if(req.method === "GET"){
-    if(!slug) throw new Error("No slug provided");
-
-    const bucketName = slug[0];
-    const fileName = slug[1];
-
-    try {
-      const response = await minioClient.getObject(bucketName, fileName);
-      res.status(200).json({ response });
-    } catch (err) {
-      throw new Error("Error get image (" + err + ") / " + bucketName + " / " + fileName);
+  if (req.method === "GET") {
+    const { bucketName } = req.query;
+    try{
+        const stream = minioClient.extensions.listObjectsV2WithMetadata(bucketName, '', true, '');
+        const get = [];
+        for await (const obj of stream) {
+            get.push(obj);
+        }
+        res.status(200).json(get);
+    }catch(err){
+        throw new Error("Error getting images (" + err + ")");
     }
   }
 }
