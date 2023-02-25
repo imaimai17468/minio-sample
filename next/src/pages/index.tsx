@@ -13,57 +13,57 @@ interface Bucket {
 }
 
 export default function Home() {
-  const [file, setFile] = useState<File>();
-  const [fileURL, setFileURL] = useState<string>();
-  const [bucketName, setBucketName] = useState<string>("");
-  const [uploadBucketName, setUploadBucketName] = useState<string>("");
   const [buckets, setBuckets] = useState<Bucket[]>([]);
-  const [bucketError, setBucketError] = useState<string>("");
+  const [makeBucketName, setMakeBucketName] = useState<string>("");
+  const [makeBucketError, setMakeBucketError] = useState<string>("");
+  const [makeBucketRes, setMakeBucketRes] = useState<string>("");
+
+  const [images, setImages] = useState<any[]>([]);
+
+  const [uploadImage, setUploadImage] = useState<File>();
+  const [uploadImageURL, setUploadImageURL] = useState<string>();
   const [uploadImageError, setUploadImageError] = useState<string>("");
   const [uploadImageRes, setUploadImageRes] = useState<string>("");
-  const [getFileName, setGetFileName] = useState<string>("");
-  const [getBucketName, setGetBucketName] = useState<string>("");
+  const [uploadImageBucketName, setUploadImageBucketName] =
+    useState<string>("");
+
   const [getImageError, setGetImageError] = useState<string>("");
   const [getImageRes, setGetImageRes] = useState<string>("");
-  const [getImage, setGetImage] = useState<any>();
-
-  useEffect(() => {
-    console.log(getImage);
-  }, [getImage]);
+  const [getImageBucketName, setGetImageBucketName] = useState<string>("");
 
   const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]!;
-    setFile(file);
-    setFileURL(URL.createObjectURL(file));
+    setUploadImage(file);
+    setUploadImageURL(URL.createObjectURL(file));
   };
 
   const handleImageUpload = async () => {
     setUploadImageError("");
     setUploadImageRes("");
 
-    if (!file) {
+    if (!uploadImage) {
       setUploadImageError("ファイルを選択してください");
       return;
     }
-    if (!uploadBucketName) {
+    if (!uploadImageBucketName) {
       setUploadImageError("バケットを選択・作成してください");
       return;
     }
 
     const params = new FormData();
-    params.append("file", file);
-    params.append("bucketName", uploadBucketName);
-    params.append("fileName", file.name);
+    params.append("file", uploadImage);
+    params.append("bucketName", uploadImageBucketName);
+    params.append("fileName", uploadImage.name);
 
-    await fetch(`/api/image`, {
+    await fetch(`/api/images`, {
       method: "POST",
       body: params,
     })
       .then((res) => {
         if (res.status === 200) {
           setUploadImageRes("アップロード成功");
-          setFileURL("");
-          setFile(undefined);
+          setUploadImageURL("");
+          setUploadImage(undefined);
         }
       })
       .catch((err) => {
@@ -75,55 +75,67 @@ export default function Home() {
     setGetImageError("");
     setGetImageRes("");
 
-    if (!getFileName) {
-      setGetImageError("ファイル名を入力してください");
-      return;
-    }
-    if (!getBucketName) {
+    if (!getImageBucketName) {
       setGetImageError("バケット名を入力してください");
       return;
     }
 
-    const fetchURL = `/api/image/${getBucketName}/${getFileName}`;
-
-    await fetch(fetchURL, {
+    await fetch("/api/images/" + getImageBucketName, {
       method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
       .then((res) => {
         if (res.status === 200) {
-          setGetImageRes("ダウンロード成功");
-          setGetImage(res);
+          setGetImageRes("画像取得成功");
+          return res.json();
         }
       })
+      .then((datum) => {
+        const data = datum.map((d: any) => {
+          return d.metadata
+        });
+        console.log(data)
+        setImages(data);
+      })
       .catch((err) => {
-        setGetImageError("ダウンロード失敗 (" + err + ")");
+        setGetImageError("画像取得失敗 (" + err + ")");
       });
   };
 
   const handleMakeBucket = async () => {
-    setBucketName("");
-    if (!bucketName) {
-      setBucketError("バケット名を入力してください");
+    setMakeBucketName("");
+    if (!makeBucketName) {
+      setMakeBucketError("バケット名を入力してください");
       return;
     }
-    if (buckets.find((bucket) => bucket.name === bucketName)) {
-      setBucketError("既に存在するバケット名です");
+    if (buckets.find((bucket) => bucket.name === makeBucketName)) {
+      setMakeBucketError("既に存在するバケット名です");
       return;
     }
-    const post = await fetch("/api/bucket", {
+    await fetch("/api/buckets", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        bucketName: bucketName,
+        bucketName: makeBucketName,
       }),
-    });
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          setMakeBucketRes("バケット作成成功");
+        }
+      })
+      .catch((err) => {
+        setMakeBucketError("バケット作成失敗 (" + err + ")");
+      });
   };
 
   useEffect(() => {
     const getBuckets = async () => {
-      const res = await fetch("/api/bucket", {
+      const res = await fetch("/api/buckets", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -137,8 +149,8 @@ export default function Home() {
 
   useEffect(() => {
     if (buckets.length > 0) {
-      setUploadBucketName(buckets[0].name);
-      setGetBucketName(buckets[0].name);
+      setUploadImageBucketName(buckets[0].name);
+      setGetImageBucketName(buckets[0].name);
     }
   }, [buckets]);
 
@@ -166,7 +178,7 @@ export default function Home() {
           ></input>
           <div className="flex flex-col items-center justify-center gap-5 bg-gray-200 p-2 rounded-md shadow-md w-3/5">
             <p>Preview</p>
-            <img src={fileURL}></img>
+            <img src={uploadImageURL}></img>
           </div>
           <div className="flex flex-col gap-3 justify-center">
             <p>Select Bucket</p>
@@ -175,7 +187,7 @@ export default function Home() {
               id="buckets"
               className="border-2 border-gray-300 p-2 rounded-md"
               onChange={(e) => {
-                setUploadBucketName(e.target.value);
+                setUploadImageBucketName(e.target.value);
               }}
             >
               {buckets.map((bucket) => {
@@ -206,9 +218,9 @@ export default function Home() {
               <select
                 name="getBuckets"
                 id="getBuckets"
-                className="border-2 border-gray-300 p-2 rounded-md"
+                className="border-2 border-gray-300 p-2 rounded-md w-full"
                 onChange={(e) => {
-                  setGetBucketName(e.target.value);
+                  setGetImageBucketName(e.target.value);
                 }}
               >
                 {buckets.map((bucket) => {
@@ -219,20 +231,6 @@ export default function Home() {
                   );
                 })}
               </select>
-            </div>
-            <div className="flex flex-col gap-3 justify-center items-center">
-              <p>File Name</p>
-              <input
-                type="text"
-                id="fileName"
-                name="fileName"
-                placeholder="file name"
-                className="border-2 border-gray-300 p-2 rounded-md"
-                value={getFileName}
-                onChange={(e) => {
-                  setGetFileName(e.target.value);
-                }}
-              ></input>
             </div>
           </div>
           <div className="flex flex-col justify-center gap-3">
@@ -247,6 +245,15 @@ export default function Home() {
           </div>
           <div className="flex flex-col items-center justify-center gap-5 bg-gray-200 p-2 rounded-md shadow-md w-3/5">
             <p>Preview</p>
+            <div>
+              {images.map((image, index) => {
+                return (
+                  <div key={index}>
+                    <img src={image} />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center my-5 gap-10 bg-gray-100 p-5 rounded-md shadow-md w-4/5">
@@ -256,7 +263,10 @@ export default function Home() {
             <div className="flex flex-row flex-wrap justify-center gap-3">
               {buckets.map((bucket, index) => {
                 return (
-                  <div className="flex flex-col items-center justify-center gap-3 p-2 rounded-md shadow-md bg-gray-300" key={index}>
+                  <div
+                    className="flex flex-col items-center justify-center gap-3 p-2 rounded-md shadow-md bg-gray-300"
+                    key={index}
+                  >
                     <p className="text-xl">{bucket.name}</p>
                     <p>{bucket.creationDate}</p>
                   </div>
@@ -275,9 +285,9 @@ export default function Home() {
             name="bucketName"
             placeholder="Bucket Name"
             className="border-2 border-gray-300 p-2 rounded-md"
-            value={bucketName}
+            value={makeBucketName}
             onChange={(e) => {
-              setBucketName(e.target.value);
+              setMakeBucketName(e.target.value);
             }}
           ></input>
           <div className="flex flex-col justify-center gap-3">
@@ -287,7 +297,8 @@ export default function Home() {
             >
               Make Bucket
             </button>
-            <p className="text-red-500">{bucketError}</p>
+            <p className="text-red-500">{makeBucketError}</p>
+            <p className="text-blue-500">{makeBucketRes}</p>
           </div>
         </div>
       </div>
