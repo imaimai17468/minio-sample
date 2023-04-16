@@ -18,8 +18,6 @@ export default function Home() {
   const [makeBucketError, setMakeBucketError] = useState<string>("");
   const [makeBucketRes, setMakeBucketRes] = useState<string>("");
 
-  const [images, setImages] = useState<any[]>([]);
-
   const [uploadImage, setUploadImage] = useState<File>();
   const [uploadImageURL, setUploadImageURL] = useState<string>();
   const [uploadImageError, setUploadImageError] = useState<string>("");
@@ -30,6 +28,8 @@ export default function Home() {
   const [getImageError, setGetImageError] = useState<string>("");
   const [getImageRes, setGetImageRes] = useState<string>("");
   const [getImageBucketName, setGetImageBucketName] = useState<string>("");
+  const [getImageObjectName, setGetImageObjectName] = useState<string>("");
+  const [getImage, setGetImage] = useState<string>("");
 
   const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]!;
@@ -80,24 +80,28 @@ export default function Home() {
       return;
     }
 
-    await fetch("/api/images/" + getImageBucketName, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    await fetch(
+      "/api/images/" + getImageBucketName + "/" + getImageObjectName,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
       .then((res) => {
         if (res.status === 200) {
-          setGetImageRes("画像取得成功");
           return res.json();
         }
       })
-      .then((datum) => {
-        const data = datum.map((d: any) => {
-          return d.metadata
-        });
-        console.log(data)
-        setImages(data);
+      .then(async (data) => {
+        if (data) {
+          console.log(data);
+          const dataUrl = data['imageUrl'].replace("minio", "localhost");
+          console.log(dataUrl);
+          setGetImageRes("画像取得成功");
+          setGetImage(dataUrl);
+        }
       })
       .catch((err) => {
         setGetImageError("画像取得失敗 (" + err + ")");
@@ -232,6 +236,16 @@ export default function Home() {
                 })}
               </select>
             </div>
+            <div className="flex flex-col gap-3 justify-center items-center">
+              <p>Image Name</p>
+              <input
+                type="text"
+                className="border-2 border-gray-300 p-2 rounded-md w-full"
+                onChange={(e) => {
+                  setGetImageObjectName(e.target.value);
+                }}
+              ></input>
+            </div>
           </div>
           <div className="flex flex-col justify-center gap-3">
             <button
@@ -246,13 +260,7 @@ export default function Home() {
           <div className="flex flex-col items-center justify-center gap-5 bg-gray-200 p-2 rounded-md shadow-md w-3/5">
             <p>Preview</p>
             <div>
-              {images.map((image, index) => {
-                return (
-                  <div key={index}>
-                    <img src={image} />
-                  </div>
-                );
-              })}
+              <img src={getImage}></img>
             </div>
           </div>
         </div>

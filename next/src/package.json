@@ -23,7 +23,7 @@
     "typescript": "4.8.4"
   },
   "devDependencies": {
-    "@types/minio": "^7.0.15",
+    "@types/minio": "^7.0.18",
     "@types/node": "^18.11.18",
     "autoprefixer": "^10.4.13",
     "eslint-plugin-tailwindcss": "^3.8.0",
