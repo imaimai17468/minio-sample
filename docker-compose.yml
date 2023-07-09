@@ -21,9 +21,9 @@ services:
     environment:
       MINIO_ROOT_USER: nutmeg
       MINIO_ROOT_PASSWORD: gidaifes
-      MINIO_ACCESS_KEY: nutmeg
-      MINIO_SECRET_KEY: gidaifes
     command: server --console-address ":9001" /data
     ports:
       - 9000:9000
       - 9001:9001
+    extra_hosts:
+      - host.docker.internal:host-gateway

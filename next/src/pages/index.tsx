@@ -96,11 +96,9 @@ export default function Home() {
       })
       .then(async (data) => {
         if (data) {
-          console.log(data);
-          const dataUrl = data['imageUrl'].replace("minio", "localhost");
-          console.log(dataUrl);
+          console.log(data["imageUrl"]);
           setGetImageRes("画像取得成功");
-          setGetImage(dataUrl);
+          setGetImage(data["imageUrl"]);
         }
       })
       .catch((err) => {
