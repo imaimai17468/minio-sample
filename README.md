@@ -42,11 +42,11 @@ code: [/next/pages/api/bucket.ts](https://github.com/imaimai17468/minio-sample/b
 
 minio API: MakeBucket / listBuckets
 
-POST
+### POST
 - body
     - bucketName: string
 
-GET
+### GET
 - body
     - 特になし
 - res
@@ -54,12 +54,17 @@ GET
     - creationDate: Date
 
 ## api/images
-code: [/next/pages/api/bucket.ts](https://github.com/imaimai17468/minio-sample/blob/master/next/src/pages/api/image.ts)
+minio API: getObject / presignedGetObject
 
-minio API: getObject / outObject
-
-POST
-
+### POST
+code: [/next/pages/api/images/index.ts](https://github.com/imaimai17468/minio-sample/blob/master/next/src/pages/api/images/index.ts)
 - bodyにFormDataを入れてPOSTしてください
+  - 要参考: [/next/pages/index.tsx](https://github.com/imaimai17468/minio-sample/blob/master/next/src/pages/index.tsx) : `handleFileUpload()`
 
-要参考: [/next/pages/index.tsx](https://github.com/imaimai17468/minio-sample/blob/master/next/src/pages/index.tsx) : `handleFileUpload()`
+### GET
+code: [/next/pages/api/images/[...slug].ts](https://github.com/imaimai17468/minio-sample/blob/master/next/src/pages/api/images/[...slug].ts)
+- body
+  - bodyはないですが、urlにクエリパラメータとしてBucket名とファイル名を入れてください
+    - `ex) api/images/bucketName/FileName`
+- res
+  - url: string
